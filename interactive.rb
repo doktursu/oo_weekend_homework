@@ -5,6 +5,8 @@ require_relative "booking"
 
 module Interactive
 
+  @bookings
+
   def make_booking
     puts "\n"
     display_header "Make a Booking"
@@ -25,8 +27,6 @@ module Interactive
       puts "\n"
     end
 
-
-
     booking = instantiate_booking(guest)
     puts "\n"
 
@@ -43,12 +43,23 @@ module Interactive
   end
 
 
-  def check_availability
+  def display_availability
     puts "\n"
-    display_header "Availability"
+    display_header "Availability Tonight"
     puts "\n"
     puts "Total Single Rooms:\t#{num_of_available_rooms_of_type(1)}"
+    puts rooms_to_string(available_rooms_of_type(1))
+    puts "\n"
     puts "Total Double Rooms:\t#{num_of_available_rooms_of_type(2)}"
+    puts rooms_to_string(available_rooms_of_type(2))
+    puts "\n"
+  end
+
+  def display_bookings
+    puts "\n"
+    display_header "Bookings"
+    puts "\n"
+    puts @bookings.map { |booking| booking.format }.join("\n")
     puts "\n"
   end
 
@@ -56,8 +67,17 @@ module Interactive
 
     def instantiate_booking(guest)
       display_header "Booking Details"
-      num_of_guests = prompt("Number of guests (1~2): ").to_i
-      Booking.new({guest: guest, num_of_guests: num_of_guests})
+      num_of_guests = prompt_i("Number of guests [1~2]: ")
+      day = prompt_i("Arrival day [1~31]: ")
+      month = prompt_i("Arrival month [1~12]: ")
+      year = prompt_i("Arrival year: ")
+      nights = prompt_i("Number of nights: ")
+      Booking.new({
+        guest: guest, 
+        num_of_guests: num_of_guests, 
+        arrival_date: Date.new(year, month, day), 
+        num_of_nights: nights
+        })
     end
 
     def instantiate_guest
@@ -72,19 +92,7 @@ module Interactive
       display_header "Search for Guest"
       forename = prompt "Forename: "
       surname = prompt "Surname: "
-      search_guest(forename, surname)
-    end
-
-    def search_guest(forename, surname)
-      return display_error("No registered guests") if @registered_guests.length == 0
-
-      search = @registered_guests.select { |registered_guest| registered_guest.forename == forename &&
-        registered_guest.surname == surname }
-      if search.length == 0
-        display_error("Guest not found")
-      else
-        search[0]
-      end
+      search_registered_guests(forename, surname)
     end
 
     def prompt(args)
@@ -92,9 +100,18 @@ module Interactive
       gets.chomp.strip
     end
 
+    def prompt_i(args)
+      print args
+      gets.chomp.strip.to_i
+    end
+
     def display_header(args)
       puts args.center(62, ' ')
       puts '-'.center(62, '-')
+    end
+
+    def rooms_to_string(rooms)
+      rooms.map { |room_number, room| room.format }.join("\n")
     end
 
 end

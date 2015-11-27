@@ -6,7 +6,7 @@ class Guest
     @title = title
     @forename = forename
     @surname = surname
-    @bookings = {}
+    @bookings = []
   end
 
   def full_name
@@ -20,7 +20,7 @@ class Guest
   end
 
   def add_booking(booking)
-    @bookings[booking.room.room_number] = booking
+    @bookings << booking
   end
 
 end

@@ -15,7 +15,7 @@ class Hotel
     # @available_double_rooms = {}
     @available_rooms = {}
     @unavailable_rooms = {}
-    @bookings = {}
+    @bookings = []
     # @booking_id = 0
     @guests = {}
     @registered_guests = []
@@ -25,17 +25,35 @@ class Hotel
   ################## ROOMS ##################
 
   def add_rooms(*rooms)
-    rooms.each { |room| @all_rooms[room.room_number] = room }
+    rooms.each do |room| 
+      @all_rooms[room.room_number] = room
+      @available_rooms[room.room_number] = room
+    end
   end
+
+  ################## AVAILABLE ROOMS ##################
 
   def num_of_available_rooms_of_type(type = nil)
-    return all_rooms.length if !type
-    rooms_of_type(type).length
+    return @available_rooms.length if !type
+    available_rooms_of_type(type).length
   end
 
-  def rooms_of_type(type = nil)
-    return all_rooms.length if !type
-    all_rooms.select { |room_number, room| room.type == type }
+  def available_rooms_of_type(type = nil)
+    return @available_rooms.length if !type
+    @available_rooms.select { |room_number, room| room.type == type }
+  end
+
+  def type_available?(type)
+    return true if num_of_available_rooms_of_type(type) > 0
+    return false
+  end
+
+  def update_available_rooms(room)
+    if @available_rooms.has_key?(room.room_number)
+      @available_rooms.delete(room.room_number)
+    else
+      @available_rooms[room.room_number] = room
+    end
   end
 
   ################## UNAVAILABLE ROOMS ##################
@@ -45,25 +63,6 @@ class Hotel
       @unavailable_rooms.delete(room.room_number)
     else
       @unavailable_rooms[room.room_number] = room
-    end
-  end
-
-  ################## AVAILABLE ROOMS ##################
-
-
-  def type_available?(type)
-    if num_of_available_rooms_of_type(type) > 0
-      return true
-    else
-      return false
-    end
-  end
-
-  def update_available_rooms(room)
-    if @all_rooms.has_key?(room.room_number)
-      @all_rooms.delete(room.room_number)
-    else
-      @all_rooms[room.room_number] = room
     end
   end
 
@@ -85,7 +84,7 @@ class Hotel
 
   def add_booking(booking)
     allocate_room(booking)
-    @bookings[booking.room.room_number] = booking
+    @bookings << booking
     booking.guest.add_booking(booking)
     update_registered_guests(booking.guest)
     update_available_rooms(booking.room)
@@ -94,7 +93,7 @@ class Hotel
 
   def allocate_room(booking)
     type = booking.num_of_guests
-    rooms_arr = @all_rooms.values.select { |room| room.type == type }
+    rooms_arr = @available_rooms.values.select { |room| room.type == type }
     booking.room = rooms_arr[0]
   end
 

@@ -1,4 +1,5 @@
 require "pry-byebug"
+require "date"
 
 require_relative "hotel"
 require_relative "room"
@@ -22,26 +23,34 @@ hotel.add_rooms(single_room, double_room, double_room_2)
 guest = Guest.new('Mr.', 'Sky', 'Su')
 booking = Booking.new({
   :guest => guest,
-  :num_of_guests => 2
+  :num_of_guests => 2,
+  arrival_date: Date.new(2015, 11, 27),
+  num_of_nights: 3 
   })
 
 guest_2 = Guest.new('Mr.', 'Oscar', 'Brooks')
 booking_2 = Booking.new({
-  :guest => guest_2,
-  :num_of_guests => 2
+  guest: guest_2,
+  num_of_guests: 2,
+  arrival_date: Date.new(2015, 11, 26),
+  num_of_nights: 2
   })
 
 guest_3 = Guest.new('Ms.', 'Evelyn', 'Utterson')
 booking_3 = Booking.new({
   :guest => guest_3,
-  :num_of_guests => 2
+  :num_of_guests => 2,
+  arrival_date: Date.new(2015, 11, 26),
+  num_of_nights: 1
   })
 
 guest_4 = Guest.new('Mr.', 'Jay', 'Chetty')
 booking_4 = Booking.new({
   guest: guest_4, 
   room: single_room,
-  num_of_guests: 1 
+  num_of_guests: 1,
+  arrival_date: Date.new(2015, 11, 27),
+  num_of_nights: 3 
   })
 
 # Add bookings
