@@ -2,7 +2,7 @@ require "date"
 
 class Booking
 
-  attr_reader :guest, :num_of_guests, :dates
+  attr_reader :guest, :num_of_guests, :dates, :checked_in, :price
   attr_accessor :room
   # , :check_in, :check_out
 
@@ -11,8 +11,8 @@ class Booking
     @num_of_guests = options[:num_of_guests]
     @room = options[:room] ? options[:room] : nil
     @dates = dates_for_nights(options[:arrival_date], options[:num_of_nights])
-    # @check_in = options[check_in]
-    # @check_out = options[check_out]
+    @checked_in = false
+    @price = nil
   end
 
   def arrival_date
@@ -33,7 +33,20 @@ Num of Guests:\t#{@num_of_guests}
 Room:\t\t#{@room.room_number}
 Arrival Date:\t#{arrival_date}
 Departure Date:\t#{departure_date}
-Num of Nights:\t#{num_of_nights}"""
+Num of Nights:\t#{num_of_nights}
+Checked in?:\t#{checked_in}"""
+  end
+
+  def check_in
+    @checked_in = true
+  end
+
+  def check_out
+    @checked_in = false
+  end
+
+  def calc_price
+    @price = num_of_nights * room.rate
   end
 
 

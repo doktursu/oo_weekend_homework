@@ -1,23 +1,18 @@
 require_relative "interactive"
 require_relative "registered_guests"
+require_relative "availability"
 
 class Hotel
 
   include Interactive
   include RegisteredGuests
+  include Availability
 
-  attr_reader :all_rooms, :bookings, :available_rooms, :unavailable_rooms
-  # , :available_rooms, :guests
+  attr_reader :all_rooms, :bookings, :available_rooms, :unavailable_rooms, :registered_guests
 
   def initialize()
     @all_rooms = {}
-    # @available_single_rooms = {}
-    # @available_double_rooms = {}
-    @available_rooms = {}
-    @unavailable_rooms = {}
     @bookings = []
-    # @booking_id = 0
-    @guests = {}
     @registered_guests = []
   end
 
@@ -27,106 +22,68 @@ class Hotel
   def add_rooms(*rooms)
     rooms.each do |room| 
       @all_rooms[room.room_number] = room
-      @available_rooms[room.room_number] = room
-    end
-  end
-
-  ################## AVAILABLE ROOMS ##################
-
-  def num_of_available_rooms_of_type(type = nil)
-    return @available_rooms.length if !type
-    available_rooms_of_type(type).length
-  end
-
-  def available_rooms_of_type(type = nil)
-    return @available_rooms.length if !type
-    @available_rooms.select { |room_number, room| room.type == type }
-  end
-
-  def type_available?(type)
-    return true if num_of_available_rooms_of_type(type) > 0
-    return false
-  end
-
-  def update_available_rooms(room)
-    if @available_rooms.has_key?(room.room_number)
-      @available_rooms.delete(room.room_number)
-    else
-      @available_rooms[room.room_number] = room
-    end
-  end
-
-  ################## UNAVAILABLE ROOMS ##################
-
-  def update_unavailable_rooms(room)
-    if @unavailable_rooms.has_key?(room.room_number)
-      @unavailable_rooms.delete(room.room_number)
-    else
-      @unavailable_rooms[room.room_number] = room
     end
   end
 
   ################## BOOKING / CHECK IN/OUT ##################
 
-  # def create_booking(booking)
-  #   if available?(booking)
-  #     add_booking(booking)
-  #   else
-  #     display_error("The room is not available")
-  #     puts "\n"
-  #   end
-  # end
-
-  def available?(booking)
-    type = booking.num_of_guests
-    type_available?(type)
-  end
 
   def add_booking(booking)
-    allocate_room(booking)
+    allocate_room(booking) unless booking.room
+    booking.calc_price()
     @bookings << booking
     booking.guest.add_booking(booking)
     update_registered_guests(booking.guest)
-    update_available_rooms(booking.room)
-    update_unavailable_rooms(booking.room)
   end
 
   def allocate_room(booking)
     type = booking.num_of_guests
-    rooms_arr = @available_rooms.values.select { |room| room.type == type }
-    booking.room = rooms_arr[0]
+    available_rooms = available_rooms_on_dates(booking.dates, type)
+    booking.room = available_rooms.values[0]
   end
 
-  def search_booking(options = {})
+  def hotel_check_in(bookings)
+    bookings.each { |booking| booking.check_in }
   end
 
-end
+  def hotel_check_out(bookings)
+    bookings.each { |booking| booking.check_out }
+  end
 
-################## ERROR MESSAGE ##################
+  def bookings_checked_in
+    @bookings.select { |booking| booking.checked_in == true }
+  end
 
-def display_error(value)
-  puts "Error: #{value}"
+  def bookings_checked_out
+    @bookings.select { |booking| booking.checked_in == false }
+  end
+
+  def guests_checked_in
+    bookings_checked_in.map { |booking| booking.guest }
+  end
+
+  def guests_checked_out
+    bookings_checked_out.map { |booking| booking.guest }
+  end
+
+  def total_guests_in_hotel
+    bookings_checked_in.map { |booking| booking.num_of_guests }.reduce(:+)
+  end
+
+  def bookings_to_check_in(date = Date.today)
+    bookings_checked_out.select { |booking| booking.dates[0] == date }
+  end
+
+  def bookings_to_check_out(date = Date.today)
+    bookings_checked_in.select { |booking| booking.dates[-1].next == date }
+  end
+
+  ################## REVENUE ##################
+
+  def revenue
+    @bookings.map { |booking| booking.price }.reduce(:+)
+  end
+
 end
 
 ################## METHOD GRAVEYARD ##################
-
-
-# def num_of_available_rooms
-#   all_rooms.length
-# end
-
-# def num_of_available_single_rooms
-#   single_rooms.length
-# end
-
-# def num_of_available_double_rooms
-#   double_rooms.length
-# end
-
-# def single_rooms
-#   all_rooms.select { |room_number, room| room.type == 1 }
-# end
-
-# def double_rooms
-#   all_rooms.select { |room_number, room| room.type == 2 }
-# end
