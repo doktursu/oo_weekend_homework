@@ -84,6 +84,12 @@ module Interactive
       puts booking.format
       puts "\n"
     end
+
+    answer = prompt("Check in guest(s)? [y/n]: ").downcase.strip
+    puts "\n"
+    if answer == 'y'
+      check_in(guest)
+    end
   end
 
 
